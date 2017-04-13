@@ -1,0 +1,26 @@
+#!/usr/bin/env ansible-playbook
+- hosts: localhost
+  connection: local
+
+  tasks:
+  - name: Update apt cache if needed.
+    apt: update_cache=yes cache_valid_time=3600
+
+  - name: "Install Base Packages"
+    apt: name={{ item }} state=latest
+    with_items:
+      - ntp
+
+  - name: Enable Ubuntu Firewall (ufw) and deny everything.
+    ufw:
+      state=enabled
+      policy=deny
+
+  - name: Turn off the logging
+    ufw: logging=off
+
+  - name: Allow Inbound Traffic
+    ufw: rule=allow port={{ item }} proto=tcp
+    with_items:
+        - 22
+        - 80
