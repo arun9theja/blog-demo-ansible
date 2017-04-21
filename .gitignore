@@ -1,6 +1,6 @@
 # OS-specific
 .DS_Store
-
+*.retry
 
 # Vagrant stuff
 /.vagrant

@@ -2,15 +2,20 @@
 - hosts: localhost
   connection: local
 
+  vars:
+    packages:
+    - nginx
+    - ntp
+
+    services:
+    - nginx
+    - ntp
+
+    firewall_inbound_ports:
+    - 80
+    - 22
+
   tasks:
-  - name: Update apt cache if needed.
-    apt: update_cache=yes cache_valid_time=3600
-
-  - name: "Install Base Packages"
-    apt: name={{ item }} state=latest
-    with_items:
-      - ntp
-
   - name: Enable Ubuntu Firewall (ufw) and deny everything.
     ufw:
       state=enabled
@@ -22,5 +27,20 @@
   - name: Allow Inbound Traffic
     ufw: rule=allow port={{ item }} proto=tcp
     with_items:
-        - 22
-        - 80
+        - "{{ firewall_inbound_ports }}"
+
+  - name: Update apt cache if needed.
+    apt: update_cache=yes cache_valid_time=3600
+
+  - name: "Install Base Packages"
+    apt: name={{ item }} state=latest
+    with_items:
+      - "{{ packages }}"
+
+  - name: Start services.
+    service: >
+      name={{ item }}
+      state=started
+      enabled=yes
+    with_items:
+      - "{{ services }}"
